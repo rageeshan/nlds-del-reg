@@ -18,8 +18,8 @@ export default function ScannerPage() {
     const html5QrScannerRef = useRef<any>(null);
 
     const processUrl = useCallback(async (scannedUrl: string) => {
-        // Extract delegateId from URL
-        const match = scannedUrl.match(/\/delegate\/(DEL\d+)/i);
+        // Extract delegateId from URL (supports custom IDs like NLDS26-32E706 and DEL001)
+        const match = scannedUrl.match(/\/delegate\/([^/?#]+)/i);
         if (!match) {
             setScanState('error');
             setErrorMsg('Invalid QR code format');
@@ -230,35 +230,35 @@ function DelegateCard({ delegate }: { delegate: DelegateResult }) {
                     <span className="detail-value">{delegate.entity}</span>
                 </div>
                 <div className="detail-row">
-                    <span className="detail-label">🎒 Merch Pack</span>
-                    <span className={`detail-value pack-badge ${delegate.merchPack?.purchased ? 'pack-yes' : 'pack-no'}`}>
-                        {delegate.merchPack?.purchased ? `${delegate.merchPack.size} (x${delegate.merchPack.quantity})` : 'No'}
+                    <span className="detail-label">🎒 Combo Pack</span>
+                    <span className={`detail-value pack-badge ${delegate.comboPack?.purchased ? 'pack-yes' : 'pack-no'}`}>
+                        {delegate.comboPack?.purchased ? (delegate.comboPack.size ? `${delegate.comboPack.size} (x${delegate.comboPack.quantity})` : `x${delegate.comboPack.quantity}`) : 'No'}
                     </span>
                 </div>
-                {delegate.drawstringBag?.purchased && (
+                {delegate.delegateTshirt?.purchased && (
                     <div className="detail-row">
-                        <span className="detail-label">🎒 Drawstring Bag</span>
-                        <span className="detail-value">x{delegate.drawstringBag.quantity}</span>
-                    </div>
-                )}
-                {delegate.pouch?.purchased && (
-                    <div className="detail-row">
-                        <span className="detail-label">👝 Pouch</span>
-                        <span className="detail-value">x{delegate.pouch.quantity}</span>
-                    </div>
-                )}
-                {delegate.radiumWristBand?.purchased && (
-                    <div className="detail-row">
-                        <span className="detail-label">⌚ Radium Wrist Band</span>
-                        <span className="detail-value">x{delegate.radiumWristBand.quantity}</span>
-                    </div>
-                )}
-                {delegate.crewNeck?.purchased && (
-                    <div className="detail-row">
-                        <span className="detail-label">👕 Crew Neck</span>
+                        <span className="detail-label">👕 Delegate Tshirt</span>
                         <span className="detail-value">
-                            {delegate.crewNeck.size} (x{delegate.crewNeck.quantity})
+                            {delegate.delegateTshirt.size} (x{delegate.delegateTshirt.quantity})
                         </span>
+                    </div>
+                )}
+                {delegate.wristBand?.purchased && (
+                    <div className="detail-row">
+                        <span className="detail-label">⌚ Wrist Band</span>
+                        <span className="detail-value">x{delegate.wristBand.quantity}</span>
+                    </div>
+                )}
+                {delegate.stickerPack?.purchased && (
+                    <div className="detail-row">
+                        <span className="detail-label">🏷️ Sticker Pack</span>
+                        <span className="detail-value">x{delegate.stickerPack.quantity}</span>
+                    </div>
+                )}
+                {delegate.bucketHat?.purchased && (
+                    <div className="detail-row">
+                        <span className="detail-label">🎩 Bucket Hat</span>
+                        <span className="detail-value">x{delegate.bucketHat.quantity}</span>
                     </div>
                 )}
             </div>

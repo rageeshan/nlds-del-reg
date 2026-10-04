@@ -96,9 +96,13 @@ export default function AdminPage() {
 
     const handleDownloadQR = async () => {
         setDownloading(true);
+        setError('');
         try {
             const res = await fetch('/api/qr/export');
-            if (!res.ok) throw new Error('Failed to download');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => null);
+                throw new Error(errData?.error || 'Failed to download QR codes');
+            }
             const blob = await res.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -106,8 +110,8 @@ export default function AdminPage() {
             a.download = 'qr-codes.zip';
             a.click();
             URL.revokeObjectURL(url);
-        } catch {
-            setError('Failed to download QR codes');
+        } catch (err: any) {
+            setError(err?.message || 'Failed to download QR codes');
         } finally {
             setDownloading(false);
         }

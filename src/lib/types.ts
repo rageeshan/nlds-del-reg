@@ -14,11 +14,11 @@ export interface Delegate {
   contactNumber?: string;
   
   // Add-ons
-  merchPack?: { purchased: boolean; size?: string; quantity: number };
-  crewNeck?: { purchased: boolean; size?: string; quantity: number };
-  drawstringBag?: { purchased: boolean; quantity: number };
-  pouch?: { purchased: boolean; quantity: number };
-  radiumWristBand?: { purchased: boolean; quantity: number };
+  comboPack?: { purchased: boolean; size?: string; quantity: number };
+  delegateTshirt?: { purchased: boolean; size?: string; quantity: number };
+  wristBand?: { purchased: boolean; quantity: number };
+  stickerPack?: { purchased: boolean; quantity: number };
+  bucketHat?: { purchased: boolean; quantity: number };
   totalItems?: number;
 }
 

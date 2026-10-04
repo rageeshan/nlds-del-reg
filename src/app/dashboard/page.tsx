@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 
 import { Delegate } from '@/lib/types';
@@ -18,7 +18,13 @@ export default function DashboardPage() {
     const [delegates, setDelegates] = useState<Delegate[]>([]);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState<'all' | 'checked' | 'remaining'>('all');
+    const [selectedEntity, setSelectedEntity] = useState<string>('all');
     const [loading, setLoading] = useState(true);
+
+    const entities = useMemo(() => {
+        const unique = Array.from(new Set(delegates.map((d) => d.entity).filter(Boolean)));
+        return unique.sort((a, b) => a.localeCompare(b));
+    }, [delegates]);
 
     const fetchData = useCallback(async () => {
         try {
@@ -59,11 +65,11 @@ export default function DashboardPage() {
                 'Email': d.email,
                 'Contact': d.contactNumber || '-',
                 'Food Preference': d.foodPreference,
-                'Merch Pack': d.merchPack?.purchased ? `${d.merchPack.size} (x${d.merchPack.quantity})` : '-',
-                'Crew Neck': d.crewNeck?.purchased ? `${d.crewNeck.size} (x${d.crewNeck.quantity})` : '-',
-                'Drawstring Bag': d.drawstringBag?.purchased ? `x${d.drawstringBag.quantity}` : '-',
-                'Pouch': d.pouch?.purchased ? `x${d.pouch.quantity}` : '-',
-                'Radium Wrist Band': d.radiumWristBand?.purchased ? `x${d.radiumWristBand.quantity}` : '-',
+                'Combo Pack': d.comboPack?.purchased ? (d.comboPack.size ? `${d.comboPack.size} (x${d.comboPack.quantity})` : `x${d.comboPack.quantity}`) : '-',
+                'Delegate Tshirt': d.delegateTshirt?.purchased ? `${d.delegateTshirt.size} (x${d.delegateTshirt.quantity})` : '-',
+                'Wrist Band': d.wristBand?.purchased ? `x${d.wristBand.quantity}` : '-',
+                'Sticker Pack': d.stickerPack?.purchased ? `x${d.stickerPack.quantity}` : '-',
+                'Bucket Hat': d.bucketHat?.purchased ? `x${d.bucketHat.quantity}` : '-',
                 'Total Add-ons': d.totalItems || '-',
                 'Status': d.checkedIn ? 'Checked In' : 'Pending',
                 'Checked In At': d.checkedInAt ? new Date(d.checkedInAt).toLocaleString() : '-'
@@ -100,7 +106,10 @@ export default function DashboardPage() {
             (filter === 'checked' && d.checkedIn) ||
             (filter === 'remaining' && !d.checkedIn);
 
-        return matchesSearch && matchesFilter;
+        const matchesEntity =
+            selectedEntity === 'all' || d.entity === selectedEntity;
+
+        return matchesSearch && matchesFilter && matchesEntity;
     });
 
     if (loading) {
@@ -183,25 +192,54 @@ export default function DashboardPage() {
                         onChange={(e) => setSearch(e.target.value)}
                         className="search-input"
                     />
-                    <div className="filter-buttons">
-                        <button
-                            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-                            onClick={() => setFilter('all')}
-                        >
-                            All
-                        </button>
-                        <button
-                            className={`filter-btn ${filter === 'checked' ? 'active' : ''}`}
-                            onClick={() => setFilter('checked')}
-                        >
-                            ✅ Checked
-                        </button>
-                        <button
-                            className={`filter-btn ${filter === 'remaining' ? 'active' : ''}`}
-                            onClick={() => setFilter('remaining')}
-                        >
-                            ⏳ Remaining
-                        </button>
+                    <div className="filter-row">
+                        <div className="filter-buttons">
+                            <button
+                                className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+                                onClick={() => setFilter('all')}
+                            >
+                                All
+                            </button>
+                            <button
+                                className={`filter-btn ${filter === 'checked' ? 'active' : ''}`}
+                                onClick={() => setFilter('checked')}
+                            >
+                                ✅ Checked
+                            </button>
+                            <button
+                                className={`filter-btn ${filter === 'remaining' ? 'active' : ''}`}
+                                onClick={() => setFilter('remaining')}
+                            >
+                                ⏳ Remaining
+                            </button>
+                        </div>
+                        <div className="entity-filter-wrapper">
+                            <select
+                                className="entity-select"
+                                value={selectedEntity}
+                                onChange={(e) => setSelectedEntity(e.target.value)}
+                                aria-label="Filter by Entity"
+                            >
+                                <option value="all">🏢 All Entities ({delegates.length})</option>
+                                {entities.map((ent) => {
+                                    const count = delegates.filter((d) => d.entity === ent).length;
+                                    return (
+                                        <option key={ent} value={ent}>
+                                            {ent} ({count})
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                            {selectedEntity !== 'all' && (
+                                <button
+                                    className="filter-reset-btn"
+                                    onClick={() => setSelectedEntity('all')}
+                                    title="Reset entity filter"
+                                >
+                                    ✕ Clear
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -215,11 +253,11 @@ export default function DashboardPage() {
                                 <th>Last Name</th>
                                 <th>Entity</th>
                                 <th>Role</th>
-                                <th>Merch Pack</th>
-                                <th>Crew Neck</th>
-                                <th>Drawstring</th>
-                                <th>Pouch</th>
+                                <th>Combo Pack</th>
+                                <th>Delegate Tshirt</th>
                                 <th>Wrist Band</th>
+                                <th>Sticker Pack</th>
+                                <th>Bucket Hat</th>
                                 <th>Total</th>
                                 <th>Status</th>
                             </tr>
@@ -236,27 +274,27 @@ export default function DashboardPage() {
                                         <td>{d.entity}</td>
                                         <td className="cell-role">{d.role || '-'}</td>
                                         <td className="cell-merch">
-                                            {d.merchPack?.purchased ? (
-                                                <span className="addon-tag tag-pack">
-                                                    {d.merchPack.size} (x{d.merchPack.quantity})
+                                            {d.comboPack?.purchased ? (
+                                                <span className="addon-tag tag-pack" title={d.comboPack.size}>
+                                                    {d.comboPack.size ? `${d.comboPack.size} (x${d.comboPack.quantity})` : `x${d.comboPack.quantity}`}
                                                 </span>
                                             ) : '-'}
                                         </td>
                                         <td className="cell-merch">
-                                            {d.crewNeck?.purchased ? (
+                                            {d.delegateTshirt?.purchased ? (
                                                 <span className="addon-tag tag-crew">
-                                                    {d.crewNeck.size} (x{d.crewNeck.quantity})
+                                                    {d.delegateTshirt.size} (x{d.delegateTshirt.quantity})
                                                 </span>
                                             ) : '-'}
                                         </td>
                                         <td className="cell-qty">
-                                            {d.drawstringBag?.purchased ? `x${d.drawstringBag.quantity}` : '-'}
+                                            {d.wristBand?.purchased ? `x${d.wristBand.quantity}` : '-'}
                                         </td>
                                         <td className="cell-qty">
-                                            {d.pouch?.purchased ? `x${d.pouch.quantity}` : '-'}
+                                            {d.stickerPack?.purchased ? `x${d.stickerPack.quantity}` : '-'}
                                         </td>
                                         <td className="cell-qty">
-                                            {d.radiumWristBand?.purchased ? `x${d.radiumWristBand.quantity}` : '-'}
+                                            {d.bucketHat?.purchased ? `x${d.bucketHat.quantity}` : '-'}
                                         </td>
                                         <td className="cell-total">{d.totalItems || '-'}</td>
                                         <td>

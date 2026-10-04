@@ -25,9 +25,9 @@ export async function GET() {
                 width: 400,
                 margin: 2,
             });
-            const safeName = delegate.name.replace(/[^a-zA-Z0-9]/g, '_');
-            const safeEntity = delegate.entity.replace(/[^a-zA-Z0-9]/g, '_');
-            zip.file(`${delegate.delegateId}_${safeName}_${safeEntity}.png`, qrBuffer);
+            const entityFolder = (delegate.entity || 'Other').trim().replace(/[/\\:*?"<>|]/g, '_') || 'Other';
+            const safeName = (delegate.name || 'Delegate').trim().replace(/[/\\:*?"<>|]/g, '_');
+            zip.file(`${entityFolder}/${delegate.delegateId}_${safeName}.png`, qrBuffer);
         }
 
         const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
