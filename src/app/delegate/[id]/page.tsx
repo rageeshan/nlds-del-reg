@@ -37,12 +37,6 @@ export default async function DelegatePage({
                             <span className="detail-label">🏢 Entity</span>
                             <span className="detail-value">{delegate.entity}</span>
                         </div>
-                        <div className="detail-row">
-                            <span className="detail-label">🎒 Combo Pack</span>
-                            <span className={`detail-value pack-badge ${delegate.comboPack?.purchased ? 'pack-yes' : 'pack-no'}`}>
-                                {delegate.comboPack?.purchased ? (delegate.comboPack.size ? `${delegate.comboPack.size} (x${delegate.comboPack.quantity})` : `x${delegate.comboPack.quantity}`) : 'No'}
-                            </span>
-                        </div>
                         {delegate.delegateTshirt?.purchased && (
                             <div className="detail-row">
                                 <span className="detail-label">👕 Delegate Tshirt</span>
