@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
                 `DEL${String(index + 1).padStart(3, '0')}`
             ).trim();
 
-            const firstName = find(['First', 'Name']) || find(['firstName']) || '';
+            const preferredName = find(['Preferred', 'Name']) || find(['preferredName']) || '';
+            const firstName = preferredName || find(['First', 'Name']) || find(['firstName']) || '';
             const lastName = find(['Last', 'Name']) || find(['lastName']) || '';
             const fullName = find(['Full', 'Name']) || find(['name']) || `${firstName} ${lastName}`.trim() || '';
 
@@ -142,6 +143,7 @@ export async function POST(request: NextRequest) {
                 name: fullName,
                 firstName: firstName,
                 lastName: lastName,
+                preferredName: preferredName || firstName,
                 email: find(['email']) || '',
                 age: parseNum(find(['age'])),
                 entity: find(['Entity']) || '',

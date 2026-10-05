@@ -18,6 +18,8 @@ export async function GET() {
 
         const zip = new JSZip();
 
+        const usedPaths = new Set<string>();
+
         for (const delegate of delegates) {
             const url = `${EVENT_DOMAIN}/delegate/${delegate.delegateId}`;
             const qrBuffer = await QRCode.toBuffer(url, {
@@ -26,8 +28,18 @@ export async function GET() {
                 margin: 2,
             });
             const entityFolder = (delegate.entity || 'Other').trim().replace(/[/\\:*?"<>|]/g, '_') || 'Other';
-            const safeName = (delegate.name || 'Delegate').trim().replace(/[/\\:*?"<>|]/g, '_');
-            zip.file(`${entityFolder}/${delegate.delegateId}_${safeName}.png`, qrBuffer);
+            const fullName = (delegate.name || `${delegate.firstName || ''} ${delegate.lastName || ''}`.trim() || delegate.delegateId).trim();
+            const safeName = fullName.replace(/[/\\:*?"<>|]/g, '_') || delegate.delegateId;
+
+            let filePath = `${entityFolder}/${safeName}.png`;
+            let counter = 1;
+            while (usedPaths.has(filePath)) {
+                counter++;
+                filePath = `${entityFolder}/${safeName} (${counter}).png`;
+            }
+            usedPaths.add(filePath);
+
+            zip.file(filePath, qrBuffer);
         }
 
         const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });

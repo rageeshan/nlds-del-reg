@@ -39,6 +39,9 @@ export async function POST(request: NextRequest) {
                 const qrDataUrl = await QRCode.toDataURL(url, { width: 300, margin: 2 });
                 const base64Data = qrDataUrl.split(',')[1];
 
+                const fullName = (delegate.name || `${delegate.firstName || ''} ${delegate.lastName || ''}`.trim() || delegate.delegateId).trim();
+                const safeName = fullName.replace(/[/\\:*?"<>|]/g, '_') || delegate.delegateId;
+
                 await resend.emails.send({
                     from: fromEmail,
                     to: delegate.email,
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
           `,
                     attachments: [
                         {
-                            filename: `${delegate.delegateId}-qrcode.png`,
+                            filename: `${safeName}.png`,
                             content: base64Data,
                             contentType: 'image/png',
                         },

@@ -53,24 +53,17 @@ export default function DashboardPage() {
         }
 
         const dataToExport = checkedDelegates.map(d => {
-            const fName = d.firstName || d.name.split(' ')[0] || '';
-            const lName = d.lastName || (d.name.includes(' ') ? d.name.substring(d.name.indexOf(' ') + 1) : '');
+            const prefName = d.preferredName || d.firstName || d.name.split(' ')[0] || '';
+            const fullName = d.name || `${prefName} ${d.lastName || ''}`.trim() || d.lastName || '';
             
             return {
                 'Delegate ID': d.delegateId,
-                'First Name': fName,
-                'Last Name': lName,
+                'Preferred Name': prefName,
+                'Full Name': fullName,
                 'Entity': d.entity,
                 'Role': d.role || '-',
                 'Email': d.email,
                 'Contact': d.contactNumber || '-',
-                'Food Preference': d.foodPreference,
-                'Combo Pack': d.comboPack?.purchased ? (d.comboPack.size ? `${d.comboPack.size} (x${d.comboPack.quantity})` : `x${d.comboPack.quantity}`) : '-',
-                'Delegate Tshirt': d.delegateTshirt?.purchased ? `${d.delegateTshirt.size} (x${d.delegateTshirt.quantity})` : '-',
-                'Wrist Band': d.wristBand?.purchased ? `x${d.wristBand.quantity}` : '-',
-                'Sticker Pack': d.stickerPack?.purchased ? `x${d.stickerPack.quantity}` : '-',
-                'Bucket Hat': d.bucketHat?.purchased ? `x${d.bucketHat.quantity}` : '-',
-                'Total Add-ons': d.totalItems || '-',
                 'Status': d.checkedIn ? 'Checked In' : 'Pending',
                 'Checked In At': d.checkedInAt ? new Date(d.checkedInAt).toLocaleString() : '-'
             };
@@ -97,9 +90,15 @@ export default function DashboardPage() {
         const matchesSearch =
             search === '' ||
             d.name.toLowerCase().includes(search.toLowerCase()) ||
+            (d.preferredName && d.preferredName.toLowerCase().includes(search.toLowerCase())) ||
+            (d.firstName && d.firstName.toLowerCase().includes(search.toLowerCase())) ||
+            (d.lastName && d.lastName.toLowerCase().includes(search.toLowerCase())) ||
             d.entity.toLowerCase().includes(search.toLowerCase()) ||
             (d.role && d.role.toLowerCase().includes(search.toLowerCase())) ||
-            d.delegateId.toLowerCase().includes(search.toLowerCase());
+            d.delegateId.toLowerCase().includes(search.toLowerCase()) ||
+            (d.email && d.email.toLowerCase().includes(search.toLowerCase())) ||
+            (d.contactNumber && d.contactNumber.toLowerCase().includes(search.toLowerCase())) ||
+            (d.foodPreference && d.foodPreference.toLowerCase().includes(search.toLowerCase()));
 
         const matchesFilter =
             filter === 'all' ||
@@ -249,61 +248,35 @@ export default function DashboardPage() {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>First Name</th>
-                                <th>Last Name</th>
+                                <th>Preferred Name</th>
+                                <th>Full Name</th>
                                 <th>Entity</th>
                                 <th>Role</th>
-                                <th>Combo Pack</th>
-                                <th>Delegate Tshirt</th>
-                                <th>Wrist Band</th>
-                                <th>Sticker Pack</th>
-                                <th>Bucket Hat</th>
-                                <th>Total</th>
+                                <th>Email</th>
+                                <th>Contact</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredDelegates.map((d) => {
-                                const fName = d.firstName || d.name.split(' ')[0] || '';
-                                const lName = d.lastName || (d.name.includes(' ') ? d.name.substring(d.name.indexOf(' ') + 1) : '');
+                                const prefName = d.preferredName || d.firstName || d.name.split(' ')[0] || '';
+                                const fullName = d.name || `${prefName} ${d.lastName || ''}`.trim() || d.lastName || '';
                                 return (
                                     <tr key={d.delegateId} className={d.checkedIn ? 'row-checked' : ''}>
                                         <td className="cell-id">{d.delegateId}</td>
-                                        <td className="cell-name">{fName}</td>
-                                        <td className="cell-name">{lName}</td>
+                                        <td className="cell-name">{prefName}</td>
+                                        <td className="cell-name">{fullName}</td>
                                         <td>{d.entity}</td>
                                         <td className="cell-role">{d.role || '-'}</td>
-                                        <td className="cell-merch">
-                                            {d.comboPack?.purchased ? (
-                                                <span className="addon-tag tag-pack" title={d.comboPack.size}>
-                                                    {d.comboPack.size ? `${d.comboPack.size} (x${d.comboPack.quantity})` : `x${d.comboPack.quantity}`}
-                                                </span>
-                                            ) : '-'}
-                                        </td>
-                                        <td className="cell-merch">
-                                            {d.delegateTshirt?.purchased ? (
-                                                <span className="addon-tag tag-crew">
-                                                    {d.delegateTshirt.size} (x{d.delegateTshirt.quantity})
-                                                </span>
-                                            ) : '-'}
-                                        </td>
-                                        <td className="cell-qty">
-                                            {d.wristBand?.purchased ? `x${d.wristBand.quantity}` : '-'}
-                                        </td>
-                                        <td className="cell-qty">
-                                            {d.stickerPack?.purchased ? `x${d.stickerPack.quantity}` : '-'}
-                                        </td>
-                                        <td className="cell-qty">
-                                            {d.bucketHat?.purchased ? `x${d.bucketHat.quantity}` : '-'}
-                                        </td>
-                                        <td className="cell-total">{d.totalItems || '-'}</td>
+                                        <td>{d.email || '-'}</td>
+                                        <td>{d.contactNumber || '-'}</td>
                                         <td>
                                             <span className={`status-badge ${d.checkedIn ? 'badge-checked' : 'badge-pending'}`}>
                                                 {d.checkedIn ? '✅ In' : '⏳'}
                                             </span>
                                         </td>
                                     </tr>
-                                )
+                                );
                             })}
                         </tbody>
                     </table>

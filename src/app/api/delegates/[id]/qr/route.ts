@@ -30,13 +30,13 @@ export async function GET(
             },
         });
 
-        const safeName = delegate.name.replace(/[^a-zA-Z0-9]/g, '_');
-        const safeEntity = delegate.entity.replace(/[^a-zA-Z0-9]/g, '_');
+        const fullName = (delegate.name || `${delegate.firstName || ''} ${delegate.lastName || ''}`.trim() || delegate.delegateId).trim();
+        const safeName = fullName.replace(/[/\\:*?"<>|]/g, '_') || delegate.delegateId;
 
         return new NextResponse(new Uint8Array(qrBuffer), {
             headers: {
                 'Content-Type': 'image/png',
-                'Content-Disposition': `inline; filename="${delegate.delegateId}_${safeName}_${safeEntity}.png"`,
+                'Content-Disposition': `inline; filename="${safeName}.png"`,
             },
         });
     } catch (error) {

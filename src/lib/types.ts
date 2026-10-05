@@ -3,6 +3,7 @@ export interface Delegate {
   name: string;
   firstName?: string;
   lastName?: string;
+  preferredName?: string;
   email: string;
   age: number;
   entity: string;
