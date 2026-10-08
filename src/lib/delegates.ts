@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Redis } from '@upstash/redis';
 import { Delegate, CheckInResult, DelegateStats } from './types';
 
@@ -7,6 +8,18 @@ const redis = new Redis({
 });
 
 const DELEGATES_KEY = 'delegates';
+
+export function generateRandomDelegateId(existingIds?: Set<string>): string {
+    let id = '';
+    do {
+        const hex = crypto.randomBytes(3).toString('hex').toUpperCase();
+        id = `NLDS26-${hex}`;
+    } while (existingIds && existingIds.has(id));
+    if (existingIds) {
+        existingIds.add(id);
+    }
+    return id;
+}
 
 export async function getDelegates(): Promise<Delegate[]> {
     const data = await redis.get<Delegate[]>(DELEGATES_KEY);

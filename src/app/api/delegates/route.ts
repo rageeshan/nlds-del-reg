@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDelegates, saveDelegates } from '@/lib/delegates';
+import { getDelegates, saveDelegates, generateRandomDelegateId } from '@/lib/delegates';
 import { Delegate } from '@/lib/types';
 
 export async function GET() {
@@ -17,7 +17,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { delegates: rawDelegates } = body as { delegates: Array<Record<string, string>> };
+        const { delegates: rawDelegates, forceRandomId } = body as {
+            delegates: Array<Record<string, string>>;
+            forceRandomId?: boolean;
+        };
 
         if (!rawDelegates || !Array.isArray(rawDelegates)) {
             return NextResponse.json(
@@ -26,7 +29,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const delegates: Delegate[] = rawDelegates.map((rawRow, index) => {
+        const usedIds = new Set<string>();
+
+        const delegates: Delegate[] = rawDelegates.map((rawRow) => {
             // Advanced fuzzy matcher: finds a column that contains ALL required keywords
             const find = (keywords: string[]) => {
                 const keys = Object.keys(rawRow);
@@ -39,14 +44,19 @@ export async function POST(request: NextRequest) {
                 return foundKey ? rawRow[foundKey] : undefined;
             };
 
-            const id = String(
+            const extractedId = String(
                 rawRow['ID'] ||
                 rawRow['Id'] ||
                 rawRow['id'] ||
                 find(['Delegate', 'ID']) ||
                 find(['ID']) ||
-                `DEL${String(index + 1).padStart(3, '0')}`
+                ''
             ).trim();
+
+            const id = (!forceRandomId && extractedId)
+                ? extractedId
+                : generateRandomDelegateId(usedIds);
+            usedIds.add(id);
 
             const preferredName = find(['Preferred', 'Name']) || find(['preferredName']) || '';
             const firstName = preferredName || find(['First', 'Name']) || find(['firstName']) || '';
@@ -148,9 +158,30 @@ export async function POST(request: NextRequest) {
                 age: parseNum(find(['age'])),
                 entity: find(['Entity']) || '',
                 role: find(['Role']) || find(['Position']) || '',
-                foodPreference: find(['Food', 'Preference']) || '',
+                foodPreference: find(['Food', 'Preference']) || find(['Food']) || find(['Diet']) || find(['Meal']) || '',
                 delegatePack: parseBoolean(find(['Merch', 'Pack'])) || parseBoolean(find(['Delegate', 'Pack'])),
-                contactNumber: find(['Contact', 'Number']) || find(['phone']) || '',
+                contactNumber: String(
+                    rawRow['Contact'] ||
+                    rawRow['contact'] ||
+                    rawRow['Contact Number'] ||
+                    rawRow['Contact No'] ||
+                    rawRow['Contact No.'] ||
+                    rawRow['Phone'] ||
+                    rawRow['phone'] ||
+                    rawRow['Phone Number'] ||
+                    rawRow['Mobile'] ||
+                    rawRow['mobile'] ||
+                    rawRow['Mobile Number'] ||
+                    rawRow['WhatsApp'] ||
+                    rawRow['whatsapp'] ||
+                    find(['Contact', 'Number']) ||
+                    find(['Contact']) ||
+                    find(['Phone']) ||
+                    find(['Mobile']) ||
+                    find(['WhatsApp']) ||
+                    find(['Tel']) ||
+                    ''
+                ).trim(),
                 checkedIn: parseBoolean(find(['Status'])),
                 
                 comboPack,

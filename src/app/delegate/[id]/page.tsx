@@ -37,6 +37,16 @@ export default async function DelegatePage({
                             <span className="detail-label">🏢 Entity</span>
                             <span className="detail-value">{delegate.entity}</span>
                         </div>
+                        {delegate.contactNumber && (
+                            <div className="detail-row">
+                                <span className="detail-label">📞 Contact</span>
+                                <span className="detail-value">
+                                    <a href={`tel:${delegate.contactNumber}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                        {delegate.contactNumber}
+                                    </a>
+                                </span>
+                            </div>
+                        )}
                         {delegate.delegateTshirt?.purchased && (
                             <div className="detail-row">
                                 <span className="detail-label">👕 Delegate Tshirt</span>

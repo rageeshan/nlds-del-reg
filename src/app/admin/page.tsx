@@ -20,6 +20,7 @@ export default function AdminPage() {
     const [sendingEmails, setSendingEmails] = useState(false);
     const [emailResult, setEmailResult] = useState<{ sent: number; failed: number } | null>(null);
     const [downloading, setDownloading] = useState(false);
+    const [autoGenerateIds, setAutoGenerateIds] = useState(true);
 
     const handleFile = useCallback((file: File) => {
         setError('');
@@ -78,7 +79,7 @@ export default function AdminPage() {
             const res = await fetch('/api/delegates', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ delegates: parsedData }),
+                body: JSON.stringify({ delegates: parsedData, forceRandomId: autoGenerateIds }),
             });
             const result = await res.json();
             if (result.success) {
@@ -180,13 +181,23 @@ export default function AdminPage() {
                     <section className="admin-section">
                         <div className="section-header">
                             <h2 className="section-title">👀 Preview ({parsedData.length} delegates)</h2>
-                            <button
-                                className="btn btn-primary"
-                                onClick={handleSave}
-                                disabled={uploading}
-                            >
-                                {uploading ? '⏳ Saving...' : '✅ Save & Generate IDs'}
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={autoGenerateIds}
+                                        onChange={(e) => setAutoGenerateIds(e.target.checked)}
+                                    />
+                                    🎲 Auto-generate random IDs (NLDS26-XXXXXX)
+                                </label>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={handleSave}
+                                    disabled={uploading}
+                                >
+                                    {uploading ? '⏳ Saving...' : '✅ Save & Generate IDs'}
+                                </button>
+                            </div>
                         </div>
                         <div className="table-wrapper">
                             <table className="data-table">

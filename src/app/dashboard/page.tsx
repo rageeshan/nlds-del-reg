@@ -57,7 +57,6 @@ export default function DashboardPage() {
             const fullName = d.name || `${prefName} ${d.lastName || ''}`.trim() || d.lastName || '';
             
             return {
-                'Delegate ID': d.delegateId,
                 'Preferred Name': prefName,
                 'Full Name': fullName,
                 'Entity': d.entity,
@@ -186,7 +185,7 @@ export default function DashboardPage() {
                 <div className="search-bar">
                     <input
                         type="text"
-                        placeholder="🔍 Search by name, entity, role, or ID..."
+                        placeholder="🔍 Search by name, entity, or role..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="search-input"
@@ -247,7 +246,6 @@ export default function DashboardPage() {
                     <table className="data-table dashboard-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Preferred Name</th>
                                 <th>Full Name</th>
                                 <th>Entity</th>
@@ -263,7 +261,6 @@ export default function DashboardPage() {
                                 const fullName = d.name || `${prefName} ${d.lastName || ''}`.trim() || d.lastName || '';
                                 return (
                                     <tr key={d.delegateId} className={d.checkedIn ? 'row-checked' : ''}>
-                                        <td className="cell-id">{d.delegateId}</td>
                                         <td className="cell-name">{prefName}</td>
                                         <td className="cell-name">{fullName}</td>
                                         <td>{d.entity}</td>
